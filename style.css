@@ -7,7 +7,7 @@ html, body {
   padding: 0;
   text-align: center;
   min-height: 100vh;
-    overscroll-behavior: none;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 
