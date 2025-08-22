@@ -152,3 +152,14 @@ li {
   color: black;
   box-shadow: 0 0 10px #00ff66;
 }
+/* Fix per Safari mobile */
+@supports (-webkit-touch-callout: none) {
+  .container {
+    min-height: -webkit-fill-available;
+  }
+  
+  html, body {
+    height: -webkit-fill-available;
+    background-color: #000000 !important;
+  }
+}
