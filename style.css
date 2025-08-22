@@ -7,7 +7,9 @@ html, body {
   padding: 0;
   text-align: center;
   min-height: 100vh;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+ 
+  background-attachment: fixed; /* importante per fissare lo sfondo anche fuori dai bordi */
+   overscroll-behavior: none;
 }
 
 
