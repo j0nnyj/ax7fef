@@ -21,6 +21,7 @@ html, body {
   padding: 15px 20px;
   border-radius: 20px;
   box-shadow: 0 4px 10px rgb(36, 36, 36);
+  height: 50px;
 }
 
 .welcome-card h2 {
@@ -30,7 +31,7 @@ html, body {
 }
 
 .logo {
-  width: 60px;
+  max-width: 100px;
   height: auto;
 }
 
