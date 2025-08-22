@@ -17,6 +17,19 @@
       <img src="img/logo.png" alt="FitUp Logo" class="logo">
     </div>
   </header>
+    
+      <!-- Menu utente mobile -->
+<div id="user-menu" class="user-menu-slide">
+  <div class="user-menu-content">
+    <button class="closebtn" onclick="closeUserMenu()">×</button>
+    <button onclick="changeUsername()">Modifica Nome Utente</button>
+    <button onclick="deleteProfile()">Elimina Allenamenti</button>
+    <button onclick="clearAllData()">Elimina Profilo</button>
+    <button onclick="exportData()">Esporta Salvataggi</button>
+    <button onclick="importData()">Importa Salvataggi</button>
+  </div>
+</div>
+
 
   <!-- Schermata home -->
   <section id="home">
@@ -37,6 +50,8 @@
       <h3>SHOULDERS</h3>
     </div>
   </section>
+
+
 
   <section id="week-graph">
   <h3>📊 Allenamenti della settimana</h3>

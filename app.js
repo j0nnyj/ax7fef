@@ -152,3 +152,78 @@ function updateWeekGraph() {
     document.getElementById("day-" + dayIndex).classList.add("active");
   });
 }
+// 🔹 Apri menu quando clicchi sul logo
+document.querySelector(".logo").addEventListener("click", () => {
+  document.getElementById("user-menu").classList.add("open");
+});
+
+// 🔹 Chiudi menu (clic su X)
+function closeUserMenu() {
+  document.getElementById("user-menu").classList.remove("open");
+}
+
+// 🔹 Modifica nome utente
+function changeUsername() {
+  let username = prompt("Inserisci il nuovo nome:");
+  if (username) {
+    localStorage.setItem("username", username);
+    document.getElementById("welcome-text").textContent = "Benvenuto " + username + "!";
+  }
+}
+
+// 🔹 Elimina profilo (nome utente + allenamenti muscoli)
+function deleteProfile() {
+  if (confirm("Sei sicuro di voler eliminare i tuoi allenamenti?")) {
+    let muscles = ["chest", "back", "leg", "shoulders"];
+    muscles.forEach(m => localStorage.removeItem(m));
+    location.reload();
+  }
+}
+
+// 🔹 Elimina tutti i dati
+function clearAllData() {
+  if (confirm("Eliminare tutti i dati salvati?")) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+// 🔹 Esporta dati in JSON
+function exportData() {
+  let data = JSON.stringify(localStorage);
+  let blob = new Blob([data], {type: "application/json"});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "fitup_backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// 🔹 Importa dati da file JSON
+function importData() {
+  let input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = e => {
+    let file = e.target.files[0];
+    if (!file) return;
+
+    let reader = new FileReader();
+    reader.onload = event => {
+      try {
+        let imported = JSON.parse(event.target.result);
+        for (let key in imported) {
+          localStorage.setItem(key, imported[key]);
+        }
+        alert("Dati importati con successo!");
+        location.reload();
+      } catch (err) {
+        alert("Errore nel file di importazione!");
+        console.error(err);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
