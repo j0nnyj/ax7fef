@@ -1,38 +1,15 @@
-/* Reset completo */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-box-sizing: border-box; /* Per Safari */
-}
-
-html, body {
-  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+/* Sfondo generale */
+body {
+  font-family: "Segoe UI", sans-serif;
   background: linear-gradient(to bottom, #00ff66 2%, #000000 99%);
-  -webkit-background: linear-gradient(to bottom, #00ff66 2%, #000000 99%); /* Per Safari */
   color: white;
   margin: 0;
   padding: 0;
   text-align: center;
-  width: 100%;
   min-height: 100vh;
-  height: 100%;
-  background-attachment: fixed;
-  overscroll-behavior: none;
-  overflow-x: hidden;
+  
 }
 
-/* Container principale */
-.container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Header */
-header {
-  width: 100%;
-}
 
 /* Card di benvenuto */
 .welcome-card {
@@ -44,7 +21,6 @@ header {
   padding: 15px 20px;
   border-radius: 20px;
   box-shadow: 0 4px 10px rgb(36, 36, 36);
-  -webkit-border-radius: 20px; /* Per Safari */
 }
 
 .welcome-card h2 {
@@ -58,19 +34,12 @@ header {
   height: auto;
 }
 
-/* Main content */
-main {
-  flex: 1;
-  width: 100%;
-}
-
 /* Card muscoli */
 #home {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
   padding: 20px;
-  width: 100%;
 }
 
 .card {
@@ -79,20 +48,17 @@ main {
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   cursor: pointer;
-  height: 150px;
+  height: 150px; /* 👈 altezza fissa della card */
   display: flex;
   align-items: center;
   justify-content: center;
-  -webkit-border-radius: 20px; /* Per Safari */
 }
 
 .card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  -webkit-object-fit: cover; /* Per Safari */
   filter: brightness(70%);
-  -webkit-filter: brightness(70%); /* Per Safari */
   display: block;
 }
 
@@ -101,7 +67,6 @@ main {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  -webkit-transform: translate(-50%, -50%); /* Per Safari */
   color: #00ff66;
   font-family: "Segoe UI Black", sans-serif;
   font-style: italic;
@@ -109,14 +74,54 @@ main {
   text-shadow: 2px 2px 4px black;
 }
 
-/* Week graph */
+/* Allenamento schermata */
+#workout-screen {
+  padding: 20px;
+}
+
+input {
+  display: block;
+  width: 80%;
+  margin: 8px auto;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  background: lime;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 15px;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #00cc44;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: rgba(0,0,0,0.6);
+  margin: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 #week-graph {
   margin: 20px;
   padding: 15px;
   background: rgba(50,50,50,0.8);
   border-radius: 15px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  -webkit-border-radius: 15px; /* Per Safari */
 }
 
 #week-graph h3 {
@@ -140,290 +145,10 @@ main {
   font-weight: bold;
   text-align: center;
   transition: all 0.3s;
-  -webkit-border-radius: 12px; /* Per Safari */
-  -webkit-transition: all 0.3s; /* Per Safari */
 }
 
 .day.active {
   background: #00ff66;
   color: black;
   box-shadow: 0 0 10px #00ff66;
-}
-
-/* Workout screen */
-#workout-screen {
-  padding: 20px;
-  width: 100%;
-  flex: 1;
-  display: none;
-}
-
-input {
-  display: block;
-  width: 80%;
-  margin: 8px auto;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  -webkit-border-radius: 8px; /* Per Safari */
-}
-
-button {
-  background: lime;
-  border: none;
-  border-radius: 10px;
-  -webkit-border-radius: 10px; /* Per Safari */
-  padding: 10px 15px;
-  font-size: 16px;
-  margin-top: 10px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #00cc44;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-  width: 100%;
-}
-
-li {
-  background: rgba(0,0,0,0.6);
-  margin: 6px;
-  padding: 10px;
-  border-radius: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  -webkit-border-radius: 10px; /* Per Safari */
-}
-
-/* Fix per Safari mobile */
-@supports (-webkit-touch-callout: none) {
-  .container {
-    min-height: -webkit-fill-available;
-  }
-  
-  html, body {
-    height: -webkit-fill-available;
-  }
-}
-
-/* Scrollbar personalizzata per Webkit (Safari/Chrome) */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #222;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #00ff66;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #00cc44;
-}
-/* Header */
-header {
-  width: 100%;
-}
-
-/* Card di benvenuto */
-.welcome-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #171717;
-  margin: 20px;
-  padding: 15px 20px;
-  border-radius: 20px;
-  box-shadow: 0 4px 10px rgb(36, 36, 36);
-  -webkit-border-radius: 20px; /* Per Safari */
-}
-
-.welcome-card h2 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: bold;
-}
-
-.logo {
-  width: 60px;
-  height: auto;
-}
-
-/* Main content */
-main {
-  flex: 1;
-  width: 100%;
-}
-
-/* Card muscoli */
-#home {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  padding: 20px;
-  width: 100%;
-}
-
-.card {
-  position: relative;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  cursor: pointer;
-  height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  -webkit-border-radius: 20px; /* Per Safari */
-}
-
-.card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  -webkit-object-fit: cover; /* Per Safari */
-  filter: brightness(70%);
-  -webkit-filter: brightness(70%); /* Per Safari */
-  display: block;
-}
-
-.card h3 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  -webkit-transform: translate(-50%, -50%); /* Per Safari */
-  color: #00ff66;
-  font-family: "Segoe UI Black", sans-serif;
-  font-style: italic;
-  font-size: 22px;
-  text-shadow: 2px 2px 4px black;
-}
-
-/* Week graph */
-#week-graph {
-  margin: 20px;
-  padding: 15px;
-  background: rgba(50,50,50,0.8);
-  border-radius: 15px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  -webkit-border-radius: 15px; /* Per Safari */
-}
-
-#week-graph h3 {
-  margin-bottom: 15px;
-  font-size: 18px;
-  font-weight: bold;
-  color: #00ff66;
-}
-
-.week-bar {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 10px;
-}
-
-.day {
-  padding: 15px 0;
-  border-radius: 12px;
-  background: #444;
-  color: white;
-  font-weight: bold;
-  text-align: center;
-  transition: all 0.3s;
-  -webkit-border-radius: 12px; /* Per Safari */
-  -webkit-transition: all 0.3s; /* Per Safari */
-}
-
-.day.active {
-  background: #00ff66;
-  color: black;
-  box-shadow: 0 0 10px #00ff66;
-}
-
-/* Workout screen */
-#workout-screen {
-  padding: 20px;
-  width: 100%;
-  flex: 1;
-  display: none;
-}
-
-input {
-  display: block;
-  width: 80%;
-  margin: 8px auto;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  -webkit-border-radius: 8px; /* Per Safari */
-}
-
-button {
-  background: lime;
-  border: none;
-  border-radius: 10px;
-  -webkit-border-radius: 10px; /* Per Safari */
-  padding: 10px 15px;
-  font-size: 16px;
-  margin-top: 10px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #00cc44;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-  width: 100%;
-}
-
-li {
-  background: rgba(0,0,0,0.6);
-  margin: 6px;
-  padding: 10px;
-  border-radius: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  -webkit-border-radius: 10px; /* Per Safari */
-}
-
-/* Fix per Safari mobile */
-@supports (-webkit-touch-callout: none) {
-  .container {
-    min-height: -webkit-fill-available;
-  }
-  
-  html, body {
-    height: -webkit-fill-available;
-  }
-}
-
-/* Scrollbar personalizzata per Webkit (Safari/Chrome) */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #222;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #00ff66;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #00cc44;
 }

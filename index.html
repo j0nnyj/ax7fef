@@ -3,72 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
   <title>FitUp Tracker</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container"> <!-- Aggiunto container principale -->
-    
-    <header>
-      <div class="welcome-card">
-        <div>
-          <h2 id="welcome-text">Benvenuto!</h2>
-        </div>
-        <img src="img/logo.png" alt="FitUp Logo" class="logo">
+  <header>
+    <div class="welcome-card">
+      <div>
+        <h2 id="welcome-text">Benvenuto!</h2>
       </div>
-    </header>
+      <img src="img/logo.png" alt="FitUp Logo" class="logo">
+    </div>
+  </header>
 
-    <!-- Schermata home -->
-    <main> <!-- Aggiunto tag main per il contenuto principale -->
-      <section id="home">
-        <div class="card" onclick="openWorkout('chest')">
-          <img src="img/chest.jpg" alt="Chest">
-          <h3>CHEST</h3>
-        </div>
-        <div class="card" onclick="openWorkout('back')">
-          <img src="img/back.jpg" alt="Back">
-          <h3>BACK</h3>
-        </div>
-        <div class="card" onclick="openWorkout('leg')">
-          <img src="img/leg.jpg" alt="Leg">
-          <h3>LEG</h3>
-        </div>
-        <div class="card" onclick="openWorkout('shoulders')">
-          <img src="img/shoulder.jpg" alt="Shoulders">
-          <h3>SHOULDERS</h3>
-        </div>
-      </section>
+  <!-- Schermata home -->
+  <section id="home">
+    <div class="card" onclick="openWorkout('chest')">
+      <img src="img/chest.jpg" alt="Chest">
+      <h3>CHEST</h3>
+    </div>
+    <div class="card" onclick="openWorkout('back')">
+      <img src="img/back.jpg" alt="Back">
+      <h3>BACK</h3>
+    </div>
+    <div class="card" onclick="openWorkout('leg')">
+      <img src="img/leg.jpg" alt="Leg">
+      <h3>LEG</h3>
+    </div>
+    <div class="card" onclick="openWorkout('shoulders')">
+      <img src="img/shoulder.jpg" alt="Shoulders">
+      <h3>SHOULDERS</h3>
+    </div>
+  </section>
 
-      <section id="week-graph">
-        <h3>📊 Allenamenti della settimana</h3>
-        <div class="week-bar">
-          <div class="day" id="day-1">L</div>
-          <div class="day" id="day-2">M</div>
-          <div class="day" id="day-3">M</div>
-          <div class="day" id="day-4">G</div>
-          <div class="day" id="day-5">V</div>
-          <div class="day" id="day-6">S</div>
-          <div class="day" id="day-7">D</div>
-        </div>
-      </section>
-    </main>
+  <section id="week-graph">
+  <h3>📊 Allenamenti della settimana</h3>
+  <div class="week-bar">
+    <div class="day" id="day-1">L</div>
+    <div class="day" id="day-2">M</div>
+    <div class="day" id="day-3">M</div>
+    <div class="day" id="day-4">G</div>
+    <div class="day" id="day-5">V</div>
+    <div class="day" id="day-6">S</div>
+    <div class="day" id="day-7">D</div>
+  </div>
+</section>
 
-    <!-- Schermata allenamento -->
-    <section id="workout-screen" style="display:none;">
-      <button onclick="goHome()">⬅ Torna indietro</button>
-      <h3 id="workout-title"></h3>
 
-      <h4>Aggiungi allenamento:</h4>
-      <input type="text" id="exercise" placeholder="Esercizio">
-      <input type="number" id="sets" placeholder="Serie">
-      <input type="number" id="reps" placeholder="Ripetizioni">
-      <input type="number" id="weight" placeholder="Peso (kg)">
-      <button onclick="addExercise()">Aggiungi</button>
+  <!-- Schermata allenamento -->
+  <section id="workout-screen" style="display:none;">
+    <button onclick="goHome()">⬅ Torna indietro</button>
+    <h3 id="workout-title"></h3>
 
-      <ul id="log-list"></ul>
-    </section>
+    <h4>Aggiungi allenamento:</h4>
+    <input type="text" id="exercise" placeholder="Esercizio">
+    <input type="number" id="sets" placeholder="Serie">
+    <input type="number" id="reps" placeholder="Ripetizioni">
+    <input type="number" id="weight" placeholder="Peso (kg)">
+    <button onclick="addExercise()">Aggiungi</button>
 
-  </div> <!-- Chiusura container -->
+    <ul id="log-list"></ul>
+  </section>
 
   <script src="app.js"></script>
 </body>
