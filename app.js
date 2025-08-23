@@ -1,226 +1,449 @@
-let currentMuscle = "";
+// =======================
+// FitUp Tracker - App.js
+// =======================
 
-// Al primo accesso chiedi nome
-document.addEventListener("DOMContentLoaded", () => {
+let currentMuscle = "";
+let currentDetailId = null;
+let allExercises = [];
+
+const EX_DB_URL = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/dist/exercises.json";
+const IMG_BASE_URL = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
+
+// ────────────────────────────────
+// Bootstrap: nome utente, grafico, listener logo/menu
+// ────────────────────────────────
+document.addEventListener("DOMContentLoaded", async () => {
   let username = localStorage.getItem("username");
   if (!username) {
-    username = prompt("Inserisci il tuo nome:");
-    if (username) {
-      localStorage.setItem("username", username);
-    } else {
-      username = "Atleta";
-    }
+    username = prompt("Inserisci il tuo nome:") || "Atleta";
+    localStorage.setItem("username", username);
   }
-  document.getElementById("welcome-text").textContent = "Benvenuto " + username + "!";
+  const welcomeEl = document.getElementById("welcome-text");
+  if (welcomeEl) welcomeEl.textContent = "Benvenuto " + username + "!";
 
-  updateWeekGraph(); // aggiorna grafico
-  loadExercises();
+  updateWeekGraph();
+
+  const logo = document.querySelector(".logo");
+  if (logo) logo.addEventListener("click", () => document.getElementById("user-menu").classList.add("open"));
+
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") searchExercise();
+  });
+
+  await loadAllExercises();
+  loadSavedExercises();
 });
 
-// Apri schermata allenamento
+// ────────────────────────────────
+// Load JSON esercizi
+// ────────────────────────────────
+async function loadAllExercises() {
+  try {
+    const res = await fetch(EX_DB_URL);
+    allExercises = await res.json();
+    console.log("✅ Esercizi caricati:", allExercises.length);
+  } catch (err) {
+    console.error("Errore caricamento ExerciseDB:", err);
+  }
+}
+
+// ────────────────────────────────
+// Navigazione schermate
+// ────────────────────────────────
 function openWorkout(muscle) {
   currentMuscle = muscle;
   document.getElementById("home").style.display = "none";
   document.getElementById("workout-screen").style.display = "block";
-
-  document.getElementById("workout-title").textContent =
-    "Allenamento " + muscle.toUpperCase();
-
-  loadExercises();
+  document.getElementById("workout-title").textContent = "Allenamento " + muscle.toUpperCase();
+  document.getElementById("searchResults").innerHTML = "";
+  loadSavedExercises();
 }
 
-// Torna alla home
 function goHome() {
   document.getElementById("workout-screen").style.display = "none";
+  document.getElementById("exercise-detail").style.display = "none";
   document.getElementById("home").style.display = "grid";
   updateWeekGraph();
+  loadSavedExercises();
 }
 
-// Aggiungi esercizio
-function addExercise() {
-  let exercise = document.getElementById("exercise").value;
-  let sets = document.getElementById("sets").value;
-  let reps = document.getElementById("reps").value;
-  let weight = document.getElementById("weight").value;
+// ────────────────────────────────
+// Ricerca esercizi
+// ────────────────────────────────
+function searchExercise() {
+  const input = document.getElementById("searchInput");
+  const resultsDiv = document.getElementById("searchResults");
+  if (!input || !resultsDiv) return;
 
-  if (!exercise || !sets || !reps || !weight) {
-    alert("Inserisci tutti i campi!");
+  const query = input.value.trim().toLowerCase();
+  if (!query) {
+    resultsDiv.innerHTML = "<p>Inserisci un nome esercizio.</p>";
     return;
   }
 
-  let workouts = JSON.parse(localStorage.getItem(currentMuscle)) || [];
+  const filtered = allExercises.filter(ex => 
+    (ex.name && ex.name.toLowerCase().includes(query)) || 
+    (ex.target && ex.target.toLowerCase().includes(query)) ||
+    (ex.bodyPart && ex.bodyPart.toLowerCase().includes(query)) ||
+    (ex.equipment && ex.equipment.toLowerCase().includes(query))
+  );
 
-  let newEntry = {
-    id: Date.now(), // id univoco
-    exercise,
-    sets,
-    reps,
-    weight,
-    date: new Date().toISOString() // salvo ISO per gestire bene le date
-  };
+  resultsDiv.innerHTML = "";
+  if (!filtered.length) {
+    resultsDiv.innerHTML = "<p>Nessun esercizio trovato.</p>";
+    return;
+  }
 
-  workouts.push(newEntry);
-  localStorage.setItem(currentMuscle, JSON.stringify(workouts));
+  filtered.forEach(ex => {
+    let imgSrc = "";
+    if (ex.images && ex.images.length > 0) {
+      const fileName = ex.images[0].split("/").pop();
+      imgSrc = IMG_BASE_URL + encodeURIComponent(ex.id) + "/" + fileName;
+    }
 
-  displayExercise(newEntry);
-  updateWeekGraph(); // aggiorna grafico settimanale
+    const row = document.createElement("div");
+    row.className = "exercise-result";
+    row.innerHTML = `
+      <img src="${imgSrc}" alt="${ex.name}" width="120">
+      <div>
+        <p><strong>${ex.name}</strong></p>
+        <small>${(ex.primaryMuscles || []).join(", ")}</small>
+        <button class="add-btn">+ Aggiungi</button>
+      </div>
+    `;
 
-  // reset campi
-  document.getElementById("exercise").value = "";
-  document.getElementById("sets").value = "";
-  document.getElementById("reps").value = "";
-  document.getElementById("weight").value = "";
+    row.querySelector(".add-btn").addEventListener("click", () => {
+      addExerciseToMuscle(ex.id, ex.name, ex.images);
+    });
+
+    resultsDiv.appendChild(row);
+  });
 }
 
-// Carica esercizi salvati
-function loadExercises() {
-  if (!currentMuscle) return;
-  let list = document.getElementById("log-list");
+// ────────────────────────────────
+// Aggiungi esercizio al muscolo
+// ────────────────────────────────
+function addExerciseToMuscle(exId, name, images) {
+  if (!currentMuscle) { 
+    alert("Apri prima una categoria!"); 
+    return; 
+  }
+
+  let exercises = JSON.parse(localStorage.getItem("myExercises")) || [];
+  if (exercises.some(e => e.exId === exId && e.muscle === currentMuscle)) {
+    alert("Esercizio già presente in questa categoria.");
+    return;
+  }
+
+  let imgSrc = '';
+  if (images && images.length > 0) {
+    const fileName = images[0].split("/").pop();
+    imgSrc = IMG_BASE_URL + encodeURIComponent(exId) + "/" + fileName;
+  }
+
+  exercises.push({ 
+    id: Date.now(), 
+    exId, 
+    muscle: currentMuscle, 
+    name, 
+    image: imgSrc, 
+    logs: [] 
+  });
+
+  localStorage.setItem("myExercises", JSON.stringify(exercises));
+  loadSavedExercises();
+}
+
+// ────────────────────────────────
+// Lista esercizi salvati
+// ────────────────────────────────
+function loadSavedExercises() {
+  const container = document.getElementById("savedExercises");
+  if (!container) return;
+
+  container.innerHTML = "";
+  const exercises = JSON.parse(localStorage.getItem("myExercises")) || [];
+  if (!exercises.length) { container.innerHTML = "<p>Nessun esercizio salvato.</p>"; return; }
+
+  exercises.forEach(ex => {
+    const lastLog = ex.logs.length ? ex.logs[ex.logs.length - 1] : null;
+    const lastText = lastLog ? `Ultimo: ${lastLog.sets}x${lastLog.reps} ${lastLog.weight}kg • ${new Date(lastLog.dateIso).toLocaleDateString()}` : "Nessun record";
+
+    const row = document.createElement("div");
+    row.className = "saved-exercise-row";
+    row.dataset.id = ex.id;
+    row.onclick = () => openExerciseDetail(ex.id);
+    row.innerHTML = `
+      <img class="saved-ex-gif" src="${ex.image || ''}" alt="${ex.name}">
+      <div class="saved-ex-info">
+        <div class="saved-ex-name">${ex.name}</div>
+        <div class="saved-ex-last">${lastText}</div>
+      </div>
+      <span class="saved-ex-chevron">›</span>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// ────────────────────────────────
+// Dettaglio esercizio
+// ────────────────────────────────
+function openExerciseDetail(id) {
+  const exercises = JSON.parse(localStorage.getItem("myExercises")) || [];
+  const exercise = exercises.find(e => e.id === id);
+  if (!exercise) return;
+
+  currentDetailId = id;
+  document.getElementById("exercise-detail").style.display = "block";
+  document.getElementById("workout-screen").style.display = "none";
+  document.getElementById("home").style.display = "none";
+
+  const detailTitle = document.getElementById("detail-title");
+  const detailImg = document.getElementById("detail-img");
+  if(detailTitle) detailTitle.textContent = exercise.name;
+  if(detailImg) detailImg.src = exercise.image || '';
+
+  renderDetailLogs(exercise);
+  renderWeightChart(exercise);
+}
+
+// Torna alla lista principale
+function goBackHome() {
+  document.getElementById("exercise-detail").style.display = "none";
+  document.getElementById("workout-screen").style.display = "block";
+  loadSavedExercises();
+}
+
+// ────────────────────────────────
+// Render log storico con icone modifica/elimina
+// ────────────────────────────────
+function renderDetailLogs(exercise) {
+  const list = document.getElementById("detail-logs");
+  if(!list) return;
   list.innerHTML = "";
 
-  let workouts = JSON.parse(localStorage.getItem(currentMuscle)) || [];
-  workouts.forEach(displayExercise);
+  if (!exercise.logs.length) { 
+    list.innerHTML = "<li>Nessun record salvato.</li>"; 
+    return; 
+  }
+
+  exercise.logs.forEach((log, index) => {
+    const li = document.createElement("li");
+    li.style.display = "flex";
+    li.style.justifyContent = "space-between";
+    li.style.alignItems = "center";
+
+    const text = document.createElement("span");
+    text.textContent = `Serie ${log.sets} x ${log.reps} | ${log.weight}kg | (${log.method}) • ${new Date(log.dateIso).toLocaleDateString()}`;
+    li.appendChild(text);
+
+    const icons = document.createElement("div");
+    icons.style.display = "flex";
+    icons.style.gap = "10px";
+
+    // Modifica
+    const editBtn = document.createElement("button");
+    editBtn.innerHTML = "✏️";
+    editBtn.className = "log-btn log-btn-edit";
+    editBtn.title = "Modifica record";
+  
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const newSets = prompt("Serie:", log.sets) || log.sets;
+      const newReps = prompt("Ripetizioni:", log.reps) || log.reps;
+      const newWeight = prompt("Peso (kg):", log.weight) || log.weight;
+      const newMethod = prompt("Metodo:", log.method) || log.method;
+
+      log.sets = Number(newSets);
+      log.reps = Number(newReps);
+      log.weight = Number(newWeight);
+      log.method = newMethod;
+
+      const exercises = JSON.parse(localStorage.getItem("myExercises")) || [];
+      localStorage.setItem("myExercises", JSON.stringify(exercises));
+      renderDetailLogs(exercise);
+      renderWeightChart(exercise);
+      loadSavedExercises();
+    });
+
+    // Elimina
+    const delBtn = document.createElement("button");
+    delBtn.innerHTML = "🗑";
+     delBtn.className = "log-btn log-btn-delete";
+    delBtn.title = "Elimina record";
+    delBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if(confirm("Eliminare questo record?")){
+        exercise.logs.splice(index, 1);
+        const exercises = JSON.parse(localStorage.getItem("myExercises")) || [];
+        localStorage.setItem("myExercises", JSON.stringify(exercises));
+        renderDetailLogs(exercise);
+        renderWeightChart(exercise);
+        loadSavedExercises();
+      }
+    });
+
+    icons.appendChild(editBtn);
+    icons.appendChild(delBtn);
+    li.appendChild(icons);
+
+    list.appendChild(li);
+  });
 }
 
-// Mostra esercizio
-function displayExercise(entry) {
-  let list = document.getElementById("log-list");
-  let item = document.createElement("li");
+// ────────────────────────────────
+// Render grafico andamento pesi
+// ────────────────────────────────
+let weightChart = null;
+function renderWeightChart(exercise) {
+  const canvas = document.getElementById("weightChart");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const labels = exercise.logs.map(l => new Date(l.dateIso).toLocaleDateString());
+  const data = exercise.logs.map(l => l.weight);
 
-  let dateObj = new Date(entry.date);
-  let dateString = dateObj.toLocaleDateString();
-
-  item.innerHTML = `
-    ${dateString} - ${entry.exercise}: ${entry.sets}x${entry.reps} @ ${entry.weight}kg
-    <div>
-      <button onclick="editExercise(${entry.id})">✏</button>
-      <button onclick="deleteExercise(${entry.id})">🗑</button>
-    </div>
-  `;
-  list.appendChild(item);
+  if (weightChart) weightChart.destroy();
+  weightChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Peso (kg)',
+        data,
+        borderColor: '#00ff66',
+        backgroundColor: 'rgba(0,255,102,0.1)',
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
 }
 
+// ────────────────────────────────
+// Form nuovo record dettaglio
+// ────────────────────────────────
+const detailForm = document.getElementById("detail-form");
+if(detailForm){
+  detailForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const form = e.target;
+    const sets = Number(form.sets.value);
+    const reps = Number(form.reps.value);
+    const weight = Number(form.weight.value);
+    const method = form.method.value;
+
+    let exercises = JSON.parse(localStorage.getItem("myExercises")) || [];
+    const exercise = exercises.find(e => e.id === currentDetailId);
+    if (!exercise) return;
+
+    exercise.logs.push({ sets, reps, weight, method, dateIso: new Date().toISOString() });
+    localStorage.setItem("myExercises", JSON.stringify(exercises));
+
+    form.reset();
+    renderDetailLogs(exercise);
+    renderWeightChart(exercise);
+    loadSavedExercises();
+    updateWeekGraph();
+  });
+}
+
+// ────────────────────────────────
 // Elimina esercizio
-function deleteExercise(id) {
-  let workouts = JSON.parse(localStorage.getItem(currentMuscle)) || [];
-  workouts = workouts.filter(entry => entry.id !== id);
-  localStorage.setItem(currentMuscle, JSON.stringify(workouts));
-  loadExercises();
+// ────────────────────────────────
+function deleteCurrentExercise() {
+  if (!confirm("Eliminare questo esercizio?")) return;
+  let exercises = JSON.parse(localStorage.getItem("myExercises")) || [];
+  exercises = exercises.filter(e => e.id !== currentDetailId);
+  localStorage.setItem("myExercises", JSON.stringify(exercises));
+  goBackHome();
   updateWeekGraph();
 }
 
-// Modifica esercizio
-function editExercise(id) {
-  let workouts = JSON.parse(localStorage.getItem(currentMuscle)) || [];
-  let entry = workouts.find(e => e.id === id);
-
-  if (entry) {
-    document.getElementById("exercise").value = entry.exercise;
-    document.getElementById("sets").value = entry.sets;
-    document.getElementById("reps").value = entry.reps;
-    document.getElementById("weight").value = entry.weight;
-
-    // elimino il vecchio record (poi sarà risalvato aggiornato)
-    workouts = workouts.filter(e => e.id !== id);
-    localStorage.setItem(currentMuscle, JSON.stringify(workouts));
-    loadExercises();
-    updateWeekGraph();
-  }
-}
-
-// 🔹 Funzione grafico settimanale
+// ────────────────────────────────
+// Grafico settimanale
+// ────────────────────────────────
 function updateWeekGraph() {
-  // reset giorni
-  for (let i = 1; i <= 7; i++) {
-    document.getElementById("day-" + i).classList.remove("active");
+  for (let i=1; i<=7; i++) {
+    const el = document.getElementById("day-"+i);
+    if(el) el.classList.remove("active");
   }
 
-  // ottieni TUTTI i dati di tutti i muscoli
-  let muscles = ["chest", "back", "leg", "shoulders"];
-  let allWorkouts = [];
-
-  muscles.forEach(muscle => {
-    let data = JSON.parse(localStorage.getItem(muscle)) || [];
-    allWorkouts = allWorkouts.concat(data);
-  });
-
-  // segna i giorni in cui c'è almeno un allenamento
-  allWorkouts.forEach(entry => {
-    let date = new Date(entry.date);
-    let day = date.getDay(); // 0=dom, 1=lun ...
-    let dayIndex = day === 0 ? 7 : day; // domenica = 7
-    document.getElementById("day-" + dayIndex).classList.add("active");
+  const exercises = JSON.parse(localStorage.getItem("myExercises")) || [];
+  exercises.forEach(ex => {
+    (ex.logs || []).forEach(l => {
+      const d = new Date(l.dateIso);
+      let jsDay = d.getDay(); 
+      let dayIndex = jsDay===0 ? 7 : jsDay;
+      const el = document.getElementById("day-"+dayIndex);
+      if(el) el.classList.add("active");
+    });
   });
 }
-// 🔹 Apri menu quando clicchi sul logo
-document.querySelector(".logo").addEventListener("click", () => {
-  document.getElementById("user-menu").classList.add("open");
-});
 
-// 🔹 Chiudi menu (clic su X)
-function closeUserMenu() {
-  document.getElementById("user-menu").classList.remove("open");
-}
-
-// 🔹 Modifica nome utente
-function changeUsername() {
-  let username = prompt("Inserisci il nuovo nome:");
-  if (username) {
-    localStorage.setItem("username", username);
-    document.getElementById("welcome-text").textContent = "Benvenuto " + username + "!";
+// ────────────────────────────────
+// Menu utente
+// ────────────────────────────────
+function closeUserMenu(){ document.getElementById("user-menu").classList.remove("open"); }
+function changeUsername(){
+  const username = prompt("Inserisci il nuovo nome:");
+  if(username){ 
+    localStorage.setItem("username", username); 
+    const welcomeEl = document.getElementById("welcome-text");
+    if(welcomeEl) welcomeEl.textContent = "Benvenuto "+username+"!";
   }
 }
-
-// 🔹 Elimina profilo (nome utente + allenamenti muscoli)
-function deleteProfile() {
-  if (confirm("Sei sicuro di voler eliminare i tuoi allenamenti?")) {
-    let muscles = ["chest", "back", "leg", "shoulders"];
-    muscles.forEach(m => localStorage.removeItem(m));
-    location.reload();
+function deleteProfile(){
+  if(confirm("Elimina tutti gli allenamenti?")){
+    localStorage.removeItem("myExercises");
+    updateWeekGraph();
+    loadSavedExercises();
   }
 }
-
-// 🔹 Elimina tutti i dati
-function clearAllData() {
-  if (confirm("Eliminare tutti i dati salvati?")) {
-    localStorage.clear();
-    location.reload();
-  }
+function clearAllData(){
+  if(confirm("Eliminare tutto?")){ localStorage.clear(); location.reload(); }
 }
 
-// 🔹 Esporta dati in JSON
+// ────────────────────────────────
+// Export / Import dati
+// ────────────────────────────────
 function exportData() {
-  let data = JSON.stringify(localStorage);
-  let blob = new Blob([data], {type: "application/json"});
-  let url = URL.createObjectURL(blob);
-  let a = document.createElement("a");
+  const data = localStorage.getItem("myExercises") || "[]";
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
   a.href = url;
-  a.download = "fitup_backup.json";
+  a.download = "fitup_exercises.json";
   a.click();
   URL.revokeObjectURL(url);
 }
 
-// 🔹 Importa dati da file JSON
 function importData() {
-  let input = document.createElement("input");
+  const input = document.createElement("input");
   input.type = "file";
   input.accept = ".json";
   input.onchange = e => {
-    let file = e.target.files[0];
+    const file = e.target.files[0];
     if (!file) return;
-
-    let reader = new FileReader();
-    reader.onload = event => {
+    const reader = new FileReader();
+    reader.onload = evt => {
       try {
-        let imported = JSON.parse(event.target.result);
-        for (let key in imported) {
-          localStorage.setItem(key, imported[key]);
+        const imported = JSON.parse(evt.target.result);
+        if (Array.isArray(imported)) {
+          localStorage.setItem("myExercises", JSON.stringify(imported));
+          alert("Dati importati correttamente!");
+          loadSavedExercises();
+          updateWeekGraph();
+        } else {
+          alert("File JSON non valido!");
         }
-        alert("Dati importati con successo!");
-        location.reload();
-      } catch (err) {
-        alert("Errore nel file di importazione!");
-        console.error(err);
+      } catch(err) {
+        alert("Errore durante l'import: " + err);
       }
     };
     reader.readAsText(file);
