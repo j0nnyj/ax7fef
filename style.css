@@ -487,8 +487,113 @@ li {
 }
 
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100..900;1,100..900&display=swap');
+
 /* ==============================
-   MEDIA QUERY
+   RESET STILI MOBILE
+   ============================== */
+button, input, textarea, select {
+  -webkit-appearance: none; /* rimuove stile iOS */
+  -moz-appearance: none;    /* rimuove stile Firefox */
+  appearance: none;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;          /* evita zoom automatico su mobile */
+  color: white;
+  background: rgba(0,0,0,0.6);
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  transition: all 0.3s ease;
+}
+
+/* Focus uniformato */
+input:focus, textarea:focus, select:focus, button:focus {
+  outline: none;
+  background: rgba(0,255,102,0.2);
+  color: black;
+  box-shadow: 0 0 5px #00ff66;
+}
+
+/* ==============================
+   BOTTONI
+   ============================== */
+button {
+  background: linear-gradient(135deg, #00ff66, #00cc44);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #00cc44, #009933);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+/* Bottoni record log */
+.log-btn {
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 14px;
+  margin-left: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  border: none;
+}
+
+.log-btn-edit {
+  background-color: #4CAF50;
+}
+
+.log-btn-edit:hover {
+  background-color: #45a049;
+}
+
+.log-btn-delete {
+  background-color: #f44336;
+}
+
+.log-btn-delete:hover {
+  background-color: #d32f2f;
+}
+
+/* Bottoni elimina dettaglio */
+#detail-delete-btn {
+  background: linear-gradient(135deg, #ff3333, #cc0000);
+  color: white;
+  border-radius: 12px;
+  padding: 10px 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+}
+
+#detail-delete-btn:hover {
+  background: linear-gradient(135deg, #cc0000, #990000);
+}
+
+/* ==============================
+   TEXTBOX / SELECT / TEXTAREA
+   ============================== */
+input[type="text"], input[type="number"], textarea, select {
+  background: rgba(0,0,0,0.6);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+}
+
+input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
+  background: rgba(0,255,102,0.2);
+  color: black;
+  box-shadow: 0 0 5px #00ff66;
+}
+
+/* ==============================
+   MOBILE RESPONSIVE
    ============================== */
 @media (max-width: 600px) {
   .exercise-result, .saved-exercise-row, .detail-header {
